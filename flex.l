@@ -19,7 +19,7 @@ DIGITS        [0-9]
 "true"                          { return TRUE; }
 "false"                         { return FALSE; }
 "null"                          { return NULLVALUE; }
-({DIGITS}+(\.{DIGITS}+)*)       { yylval.number = atof(yytext); return NUMBER; }
+((-?){DIGITS}+(\.{DIGITS}+)*)   { yylval.number = atof(yytext); return NUMBER; }
 (\"([^"\\]|\\.)*\")             { yylval.chararr = strdup(yytext); return STRING; }
 <<EOF>>                         { return END_OF_FILE; }
 

@@ -63,7 +63,7 @@ object:
     }
     | CURLY_BRACKET_OPEN CURLY_BRACKET_CLOSE
     {
-        $$ = json_add_pair_to_head(NULL, NULL);
+        $$ = NULL;
     }
     ;
 
@@ -92,7 +92,7 @@ array:
     }
     | SQUARE_BRACKET_OPEN SQUARE_BRACKET_CLOSE
     {
-        $$ = json_add_value_to_head(NULL, NULL);
+        $$ = NULL;
     }
     ;
 
