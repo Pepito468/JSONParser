@@ -1,0 +1,23 @@
+{
+    "id": 12345,
+    "name": "Joe",
+    "email": "joe@example.com",
+    "isActive": true,
+    "roles": ["user", "admin"],
+    "profile": {
+        "age": 56,
+        "country": "Italy",
+        "preferences": {
+            "language": "en",
+            "timezone": "Europe/Rome",
+            "notifications": {
+                "email": true,
+                "sms": false
+            }
+        }
+    },
+    "createdAt": "2025-01-15T10:30:00Z",
+    "email": "jane.doe@example.com\"\\\b\r\t\y\"",
+    "nil": null
+}
+
