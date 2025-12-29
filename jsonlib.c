@@ -7,6 +7,8 @@
 #include <sys/types.h>
 #include "jsonlib.h"
 
+#define PADDING "    "
+
 json_value_list_node_t* json_add_value_to_head(json_value_list_node_t *list, json_value_t *value) {
     json_value_list_node_t *new = malloc(sizeof(json_value_list_node_t));
     new -> value = value;
@@ -64,9 +66,10 @@ json_value_t* json_create_value(json_value_type_t type, void *data) {
     return new_value;
 }
 
-void json_object_print(json_pair_list_node_t *json) {
+void json_object_print_recursive(json_pair_list_node_t *json, int depth) {
     printf("{\n");
     for (json_pair_list_node_t *current = json; current; current = current -> next) {
+        for(int i = 0; i < depth; i++) printf(PADDING);
         printf("\"%s\" : ", current -> pair -> key);
         switch (current -> pair -> value -> type) {
             case JSTRING:
@@ -76,10 +79,10 @@ void json_object_print(json_pair_list_node_t *json) {
                 printf("%f", current -> pair -> value -> data.number);
                 break;
             case JOBJECT:
-                json_object_print(current -> pair -> value -> data.object);
+                json_object_print_recursive(current -> pair -> value -> data.object, depth + 1);
                 break;
             case JARRAY:
-                json_array_print(current -> pair -> value -> data.array);
+                json_array_print(current -> pair -> value -> data.array, depth + 1);
                 break;
             case JTRUE:
                 printf("true");
@@ -97,11 +100,16 @@ void json_object_print(json_pair_list_node_t *json) {
             printf(",");
         printf("\n");
     }
+    for(int i = 0; i < depth - 1; i++) printf(PADDING);
     printf("}");
 }
 
 
-void json_array_print(json_value_list_node_t *array) {
+void json_object_print(json_pair_list_node_t *json) {
+    json_object_print_recursive(json, 1);
+}
+
+void json_array_print(json_value_list_node_t *array, int depth) {
     printf("[");
     for (json_value_list_node_t *current = array; current; current = current -> next) {
         switch (current -> value -> type) {
@@ -112,10 +120,10 @@ void json_array_print(json_value_list_node_t *array) {
                 printf("%f", current -> value -> data.number);
                 break;
             case JOBJECT:
-                json_object_print(current -> value -> data.object);
+                json_object_print_recursive(current -> value -> data.object, depth + 1);
                 break;
             case JARRAY:
-                json_array_print(current -> value -> data.array);
+                json_array_print(current -> value -> data.array, depth + 1);
                 break;
             case JTRUE:
                 printf("true");

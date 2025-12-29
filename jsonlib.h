@@ -63,7 +63,7 @@ json_value_t* json_create_value(json_value_type_t type, void *data);
 void json_object_print(json_pair_list_node_t *json);
 
 /* Prints the given Json Array */
-void json_array_print(json_value_list_node_t *array);
+void json_array_print(json_value_list_node_t *array, int depth);
 
 /* Returns the value from the Json that is associated with the given key. Returns NULL if it finds nothing */
 json_value_t* json_get_value(json_pair_list_node_t *json, char *key);

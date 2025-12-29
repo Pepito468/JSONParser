@@ -4,7 +4,7 @@
 
 int main(int argc, char **argv) {
 
-    if (argc != 2)
+    if (argc != 3)
         return 1;
 
     FILE *p = fopen(argv[1], "r");
@@ -31,8 +31,10 @@ int main(int argc, char **argv) {
             printf("PROFILE -> AGE: %f\n", age -> data.number);
     }
 
-    if (!json_get_value(json, "Test"))
-        printf("Does not have a 'Test' key!\n");
+    if (json_get_value(json, argv[2]))
+        printf("Has a \"%s\" key!\n", argv[2]);
+    else
+        printf("Does not have a \"%s\" key!\n", argv[2]);
 
     json_free_object(json);
 

@@ -6,6 +6,7 @@
 
 json_pair_list_node_t *main_json = NULL;
 
+#define YYMAXDEPTH 1000000
 extern int yylineno;
 int current_line = 0;
 extern FILE *yyin;
@@ -143,7 +144,6 @@ value:
 void yyerror(const char *msg)
 {
     fprintf(stderr, "JSON is malformed (line %d):\n%s\n", yylineno - 1, msg);
-    yydebug = 1;
     exit(1);
 }
 
