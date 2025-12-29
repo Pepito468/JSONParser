@@ -19,6 +19,7 @@ void yyerror(const char *);
 
 %code provides {
     struct json_pair_list_node* flexbison(FILE *bison_input);
+    void yyerror(const char *);
 }
 
 %union {
@@ -144,6 +145,7 @@ value:
 void yyerror(const char *msg)
 {
     fprintf(stderr, "JSON is malformed (line %d):\n%s\n", yylineno - 1, msg);
+    json_free_object(main_json);
     exit(1);
 }
 

@@ -17,7 +17,12 @@
         }
     },
     "createdAt": "2025-01-15T10:30:00Z",
-    "email": "jane.doe@example.com\"\\\b\r\t\y\"",
-    "nil": null
+    "escape": "sample\"\\\/\b\f\n\r\t\\u1234\"\a",
+    "nil": null,
+    "num1": -5.6e2,
+    "num1": 22e2,
+    "num1": -5.1e-2,
+    "num1": 3e-15,
+    "utf8": "私"
 }
 
