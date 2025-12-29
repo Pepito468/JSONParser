@@ -17,7 +17,7 @@
         }
     },
     "createdAt": "2025-01-15T10:30:00Z",
-    "escape": "sample\"\\\/\b\f\n\r\t\\u1234\"\a",
+    "escape": "sample\"\\\/\b\f\n\r\t\uaF25\"",
     "nil": null,
     "num1": -5.6e2,
     "num1": 22e2,

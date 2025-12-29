@@ -7,6 +7,7 @@
 %option yylineno
 
 DIGITS        [0-9]
+ESCAPABLE     ("\""|"\\"|"/"|"b"|"f"|"n"|"r"|"t"|"u"[0-9a-fA-F]{4})
 
 %%
 
@@ -20,7 +21,7 @@ DIGITS        [0-9]
 "false"                                             { return FALSE; }
 "null"                                              { return NULLVALUE; }
 ((-?){DIGITS}+(\.{DIGITS}+)*((e|E)(-?){DIGITS}+)*)  { yylval.number = atof(yytext); return NUMBER; }
-(\"([^"\\]|\\.)*\")                                 { yylval.chararr = strdup(yytext); return STRING; }
+(\"([^"\\]|\\{ESCAPABLE})*\")                       { yylval.chararr = strdup(yytext); return STRING; }
 <<EOF>>                                             { return END_OF_FILE; }
 
 [ \n\t\r]                                           /* Ignore */
