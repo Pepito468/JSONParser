@@ -7,10 +7,10 @@
 json_pair_list_node_t *main_json = NULL;
 
 #define YYMAXDEPTH 1000000
+extern int yylex_destroy(void);
 extern int yylineno;
-int current_line = 0;
 extern FILE *yyin;
-int yylex(void);
+extern int yylex(void);
 void yyerror(const char *);
 %}
 
@@ -156,6 +156,8 @@ json_pair_list_node_t* flexbison(FILE *bison_input) {
 
     /* Parse input file */
     yyparse();
+
+    yylex_destroy();
 
     return main_json;
 }

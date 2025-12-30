@@ -6,6 +6,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include "jsonlib.h"
+#include "bison.tab.h"
 
 #define PADDING "    "
 
@@ -27,9 +28,14 @@ json_pair_list_node_t* json_add_pair_to_head(json_pair_list_node_t *list, json_p
 
 json_pair_t* json_create_pair(char *key, json_value_t *value) {
     json_pair_t *new = malloc(sizeof(json_pair_t));
-    new -> key = strndup(key + sizeof(char), strlen(key) - 2);
+    new -> key = key;
     new -> value = value;
     return new;
+}
+
+
+json_pair_list_node_t* json_parse(FILE *file) {
+    return flexbison(file);
 }
 
 json_value_t* json_create_value(json_value_type_t type, void *data) {
@@ -39,7 +45,7 @@ json_value_t* json_create_value(json_value_type_t type, void *data) {
 
     switch (type) {
         case JSTRING:
-            new_value -> data.string = strndup(data + sizeof(char), strlen(data) - 2);
+            new_value -> data.string = data;
             break;
         case JNUMBER:
             new_value -> data.number = *((double*) data);
@@ -154,7 +160,7 @@ json_value_t* json_get_value(json_pair_list_node_t *json, char *key) {
 
 /* Frees Json Array memory */
 void json_free_array(json_value_list_node_t *array) {
-    for (json_value_list_node_t *current = array; current; current = current -> next) {
+    for (json_value_list_node_t *current = array; current;) {
         switch (current -> value -> type) {
             case JSTRING:
                 free(current -> value -> data.string);
@@ -168,13 +174,16 @@ void json_free_array(json_value_list_node_t *array) {
             default: /* Other types don't need to be freed */
                 break;
         }
+        free(current -> value);
+        json_value_list_node_t *temp = current;
+        current = current -> next;
+        free(temp);
     }
-    free(array);
 }
 
 /* Frees Json Object memory */
 void json_free_object(json_pair_list_node_t *json) {
-    for (json_pair_list_node_t *current = json; current; current = current -> next) {
+    for (json_pair_list_node_t *current = json; current;) {
         free(current -> pair -> key);
         switch (current -> pair -> value -> type) {
             case JSTRING:
@@ -189,7 +198,10 @@ void json_free_object(json_pair_list_node_t *json) {
             default: /* Other types don't need to be freed */
                 break;
         }
+        free(current -> pair -> value);
+        free(current -> pair);
+        json_pair_list_node_t *temp = current;
+        current = current -> next;
+        free(temp);
     }
-    free(json);
 }
-

@@ -71,4 +71,7 @@ json_value_t* json_get_value(json_pair_list_node_t *json, char *key);
 /* Frees Json Object memory */
 void json_free_object(json_pair_list_node_t *json);
 
+/* Parses the given file and returns a Json Object */
+json_pair_list_node_t* json_parse(FILE *file);
+
 #endif
