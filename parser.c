@@ -18,17 +18,17 @@ int main(int argc, char **argv) {
     printf("\n");
     json_value_t *mail = json_get_value(json, "email");
     if (mail)
-        printf("MAIL: %s\n", mail -> data . string);
+        printf("MAIL: %s\n", (char*) mail -> data);
 
     json_value_t *id = json_get_value(json, "id");
     if (id)
-        printf("ID: %f\n", json_get_value(json, "id") -> data . number);
+        printf("ID: %f\n", *(double*)json_get_value(json, "id") -> data);
 
     json_value_t *profile = json_get_value(json, "profile");
     if (profile) {
-        json_value_t *age = json_get_value(profile -> data.object, "age");
+        json_value_t *age = json_get_value(profile -> data, "age");
         if (age)
-            printf("PROFILE -> AGE: %f\n", age -> data.number);
+            printf("PROFILE -> AGE: %f\n", *(double*) age -> data);
     }
 
     if (json_get_value(json, argv[2]))

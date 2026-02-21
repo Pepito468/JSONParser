@@ -24,7 +24,7 @@ void yyerror(const char *);
 
 %union {
     char *chararr;
-    double number;
+    double *number;
     struct json_value *json_value;
     struct json_value_list_node *json_value_list;
     struct json_pair *json_pair;
@@ -116,7 +116,7 @@ value:
     }
     | NUMBER
     {
-        $$ = json_create_value(JNUMBER, &($1));
+        $$ = json_create_value(JNUMBER, $1);
     }
     | object
     {
@@ -145,7 +145,7 @@ value:
 void yyerror(const char *msg)
 {
     fprintf(stderr, "JSON is malformed (line %d):\n%s\n", yylineno - 1, msg);
-    json_free_object(main_json);
+    json_free_object(main_json); /* This does probably nothing */
     exit(1);
 }
 

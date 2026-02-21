@@ -18,19 +18,10 @@ struct json_pair;
 struct pair_list_node;
 struct value_list_node;
 
-union data {
-    char *string;
-    double number;
-    struct json_pair_list_node *object;
-    struct json_value_list_node *array;
-    bool boolean;
-    void *nullpt;
-};
-
-/* Json type struct: contains the type and the data */
+/* Json type struct: contains the data type and the data itself */
 typedef struct json_value {
     json_value_type_t type; /* Enum of the type inside of data */
-    union data data; /* Data: the type of data depends on the one indicated by the type */
+    void *data; /* Data: the type of data depends on the one indicated by the type */
 } json_value_t;
 
 /* Json Array as a list of values */

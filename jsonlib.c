@@ -42,32 +42,7 @@ json_value_t* json_create_value(json_value_type_t type, void *data) {
 
     json_value_t *new_value = malloc(sizeof(json_value_t));
     new_value -> type = type;
-
-    switch (type) {
-        case JSTRING:
-            new_value -> data.string = data;
-            break;
-        case JNUMBER:
-            new_value -> data.number = *((double*) data);
-            break;
-        case JOBJECT:
-            new_value -> data.object = data;
-            break;
-        case JARRAY:
-            new_value -> data.array = data;
-            break;
-        case JTRUE:
-            new_value -> data.boolean = true;
-            break;
-        case JFALSE:
-            new_value -> data.boolean = false;
-            break;
-        case JNULL: 
-            new_value -> data.nullpt = NULL;
-            break;
-        default:
-            printf("ERROR\n");
-    }
+    new_value -> data = data;
 
     return new_value;
 }
@@ -79,16 +54,16 @@ void json_object_print_recursive(json_pair_list_node_t *json, int depth) {
         printf("\"%s\" : ", current -> pair -> key);
         switch (current -> pair -> value -> type) {
             case JSTRING:
-                printf("\"%s\"", current -> pair -> value -> data.string);
+                printf("\"%s\"", (char*) current -> pair -> value -> data);
                 break;
             case JNUMBER:
-                printf("%f", current -> pair -> value -> data.number);
+                printf("%f", *(double*) current -> pair -> value -> data);
                 break;
             case JOBJECT:
-                json_object_print_recursive(current -> pair -> value -> data.object, depth + 1);
+                json_object_print_recursive(current -> pair -> value -> data, depth + 1);
                 break;
             case JARRAY:
-                json_array_print(current -> pair -> value -> data.array, depth + 1);
+                json_array_print(current -> pair -> value -> data, depth + 1);
                 break;
             case JTRUE:
                 printf("true");
@@ -120,16 +95,16 @@ void json_array_print(json_value_list_node_t *array, int depth) {
     for (json_value_list_node_t *current = array; current; current = current -> next) {
         switch (current -> value -> type) {
             case JSTRING:
-                printf("\"%s\"", current -> value -> data.string);
+                printf("\"%s\"", (char*) current -> value -> data);
                 break;
             case JNUMBER:
-                printf("%f", current -> value -> data.number);
+                printf("%f", *(double*) current -> value -> data);
                 break;
             case JOBJECT:
-                json_object_print_recursive(current -> value -> data.object, depth + 1);
+                json_object_print_recursive(current -> value -> data, depth + 1);
                 break;
             case JARRAY:
-                json_array_print(current -> value -> data.array, depth + 1);
+                json_array_print(current -> value -> data, depth + 1);
                 break;
             case JTRUE:
                 printf("true");
@@ -163,13 +138,13 @@ void json_free_array(json_value_list_node_t *array) {
     for (json_value_list_node_t *current = array; current;) {
         switch (current -> value -> type) {
             case JSTRING:
-                free(current -> value -> data.string);
+                free(current -> value -> data);
                 break;
             case JOBJECT:
-                json_free_object(current -> value -> data.object);
+                json_free_object(current -> value -> data);
                 break;
             case JARRAY:
-                json_free_array(current -> value -> data.array);
+                json_free_array(current -> value -> data);
                 break;
             default: /* Other types don't need to be freed */
                 break;
@@ -187,13 +162,16 @@ void json_free_object(json_pair_list_node_t *json) {
         free(current -> pair -> key);
         switch (current -> pair -> value -> type) {
             case JSTRING:
-                free(current -> pair -> value -> data.string);
+                free(current -> pair -> value -> data);
+                break;
+            case JNUMBER:
+                free(current -> pair -> value -> data);
                 break;
             case JOBJECT:
-                json_free_object(current -> pair -> value -> data.object);
+                json_free_object(current -> pair -> value -> data);
                 break;
             case JARRAY:
-                json_free_array(current -> pair -> value -> data.array);
+                json_free_array(current -> pair -> value -> data);
                 break;
             default: /* Other types don't need to be freed */
                 break;
