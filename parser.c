@@ -10,7 +10,7 @@ int main(int argc, char **argv) {
     if (!p)
         return 1;
 
-    json_pair_list_node_t *json = json_parse(p);
+    json_object_t *json = json_parse(p);
     fclose(p);
     json_object_print(json);
 

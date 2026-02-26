@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include "jsonlib.h"
 
-json_pair_list_node_t *main_json = NULL;
+json_object_t *main_json = NULL;
 
 #define YYMAXDEPTH 1000000
 extern int yylex_destroy(void);
@@ -18,17 +18,17 @@ void yyerror(const char *);
 %define parse.trace
 
 %code provides {
-    struct json_pair_list_node* flexbison(FILE *bison_input);
+    struct json_object* flexbison(FILE *bison_input);
     void yyerror(const char *);
 }
 
 %union {
     char *chararr;
     double *number;
-    struct json_value *json_value;
-    struct json_value_list_node *json_value_list;
+    struct json_object *json_object;
+    struct json_array *json_array;
     struct json_pair *json_pair;
-    struct json_pair_list_node *json_pair_list;
+    struct json_value *json_value;
 }
 
 %start begin
@@ -41,12 +41,14 @@ void yyerror(const char *);
 %token <chararr> STRING
 %token END_OF_FILE
 
-%type <json_pair_list> object
-%type <json_value_list> array
+%type <json_object> object
+%type <json_array> array
 %type <json_pair> pair
-%type <json_pair_list> more_pairs
+%type <json_pair> pairs
+%type <json_pair> more_pairs
 %type <json_value> value
-%type <json_value_list> more_values
+%type <json_value> values
+%type <json_value> more_values
 
 %%
 
@@ -59,11 +61,32 @@ begin:
     ;
 
 object:
-    CURLY_BRACKET_OPEN pair more_pairs CURLY_BRACKET_CLOSE
+    CURLY_BRACKET_OPEN pairs CURLY_BRACKET_CLOSE
     {
-        $$ = json_add_pair_to_head($3, $2);
+        $$ = json_create_object();
+        $$ -> pair_list_head = $2;
     }
-    | CURLY_BRACKET_OPEN CURLY_BRACKET_CLOSE
+    ;
+
+pairs:
+    pair more_pairs
+    {
+        json_concatenate_pairs($1, $2);
+        $$ = $1;
+    }
+    | %empty
+    {
+        $$ = NULL;
+    }
+    ;
+
+more_pairs:
+    COMMA pair more_pairs
+    {
+        json_concatenate_pairs($2, $3);
+        $$ = $2;
+    }
+    | %empty
     {
         $$ = NULL;
     }
@@ -76,32 +99,30 @@ pair:
     }
     ;
 
-more_pairs:
-    COMMA pair more_pairs
+array:
+    SQUARE_BRACKET_OPEN values SQUARE_BRACKET_CLOSE
     {
-        $$ = json_add_pair_to_head($3, $2);
+        $$ = json_create_array();
+        $$ -> value_list_head = $2;
+    }
+    ;
+
+values:
+    value more_values
+    {
+        json_concatenate_values($1, $2);
+        $$ = $1;
     }
     | %empty
     {
         $$ = NULL;
     }
-    ;
-
-array:
-    SQUARE_BRACKET_OPEN value more_values SQUARE_BRACKET_CLOSE
-    {
-        $$ = json_add_value_to_head($3, $2);
-    }
-    | SQUARE_BRACKET_OPEN SQUARE_BRACKET_CLOSE
-    {
-        $$ = NULL;
-    }
-    ;
 
 more_values:
     COMMA value more_values
     {
-        $$ = json_add_value_to_head($3, $2);
+        json_concatenate_values($2, $3);
+        $$ = $2;
     }
     | %empty
     {
@@ -150,7 +171,7 @@ void yyerror(const char *msg)
 }
 
 
-json_pair_list_node_t* flexbison(FILE *bison_input) {
+json_object_t* flexbison(FILE *bison_input) {
 
     yyin = bison_input;
 

@@ -10,60 +10,64 @@
 
 #define PADDING "    "
 
-json_value_list_node_t* json_add_value_to_head(json_value_list_node_t *list, json_value_t *value) {
-    json_value_list_node_t *new = malloc(sizeof(json_value_list_node_t));
-    new -> value = value;
-    new -> next = list;
-    list = new;
-    return new;
+json_object_t* json_parse(FILE *file) {
+    return flexbison(file);
 }
 
-json_pair_list_node_t* json_add_pair_to_head(json_pair_list_node_t *list, json_pair_t *pair) {
-    json_pair_list_node_t *new = malloc(sizeof(json_pair_list_node_t));
-    new -> pair = pair;
-    new -> next = list;
-    list = new;
-    return list;
+json_object_t* json_create_object() {
+    json_object_t *new_object = malloc(sizeof(json_object_t));
+    new_object -> pair_list_head = NULL;
+    return new_object;
+}
+
+json_array_t* json_create_array() {
+    json_array_t *new_array = malloc(sizeof(json_array_t));
+    new_array -> value_list_head = NULL;
+    return new_array;
+}
+
+void json_concatenate_pairs(json_pair_t *list, json_pair_t *pair) {
+    list -> next = pair;
+}
+
+void json_concatenate_values(json_value_t *list, json_value_t *value) {
+    list -> next = value;
 }
 
 json_pair_t* json_create_pair(char *key, json_value_t *value) {
-    json_pair_t *new = malloc(sizeof(json_pair_t));
-    new -> key = key;
-    new -> value = value;
-    return new;
+    json_pair_t *new_pair = malloc(sizeof(json_pair_t));
+    new_pair -> key = key;
+    new_pair -> value = value;
+    new_pair -> next = NULL;
+    return new_pair;
 }
 
-
-json_pair_list_node_t* json_parse(FILE *file) {
-    return flexbison(file);
-}
 
 json_value_t* json_create_value(json_value_type_t type, void *data) {
 
     json_value_t *new_value = malloc(sizeof(json_value_t));
     new_value -> type = type;
     new_value -> data = data;
-
+    new_value -> next = NULL;
     return new_value;
 }
 
-void json_object_print_recursive(json_pair_list_node_t *json, int depth) {
+void json_object_print(json_object_t *json) {
     printf("{\n");
-    for (json_pair_list_node_t *current = json; current; current = current -> next) {
-        for(int i = 0; i < depth; i++) printf(PADDING);
-        printf("\"%s\" : ", current -> pair -> key);
-        switch (current -> pair -> value -> type) {
+    for (json_pair_t *current = json -> pair_list_head; current; current = current -> next) {
+        printf("\"%s\" : ", current -> key);
+        switch (current -> value -> type) {
             case JSTRING:
-                printf("\"%s\"", (char*) current -> pair -> value -> data);
+                printf("\"%s\"", (char*) current -> value -> data);
                 break;
             case JNUMBER:
-                printf("%f", *(double*) current -> pair -> value -> data);
+                printf("%f", *(double*) current -> value -> data);
                 break;
             case JOBJECT:
-                json_object_print_recursive(current -> pair -> value -> data, depth + 1);
+                json_object_print(current -> value -> data);
                 break;
             case JARRAY:
-                json_array_print(current -> pair -> value -> data, depth + 1);
+                json_array_print(current -> value -> data);
                 break;
             case JTRUE:
                 printf("true");
@@ -81,30 +85,24 @@ void json_object_print_recursive(json_pair_list_node_t *json, int depth) {
             printf(",");
         printf("\n");
     }
-    for(int i = 0; i < depth - 1; i++) printf(PADDING);
     printf("}");
 }
 
-
-void json_object_print(json_pair_list_node_t *json) {
-    json_object_print_recursive(json, 1);
-}
-
-void json_array_print(json_value_list_node_t *array, int depth) {
+void json_array_print(json_array_t *array) {
     printf("[");
-    for (json_value_list_node_t *current = array; current; current = current -> next) {
-        switch (current -> value -> type) {
+    for (json_value_t *current = array -> value_list_head; current; current = current -> next) {
+        switch (current -> type) {
             case JSTRING:
-                printf("\"%s\"", (char*) current -> value -> data);
+                printf("\"%s\"", (char*) current -> data);
                 break;
             case JNUMBER:
-                printf("%f", *(double*) current -> value -> data);
+                printf("%f", *(double*) current -> data);
                 break;
             case JOBJECT:
-                json_object_print_recursive(current -> value -> data, depth + 1);
+                json_object_print(current -> data);
                 break;
             case JARRAY:
-                json_array_print(current -> value -> data, depth + 1);
+                json_array_print(current -> data);
                 break;
             case JTRUE:
                 printf("true");
@@ -112,7 +110,7 @@ void json_array_print(json_value_list_node_t *array, int depth) {
             case JFALSE:
                 printf("false");
                 break;
-            case JNULL: 
+            case JNULL:
                 printf("null");
                 break;
             default:
@@ -124,20 +122,50 @@ void json_array_print(json_value_list_node_t *array, int depth) {
     printf("]");
 }
 
-json_value_t* json_get_value(json_pair_list_node_t *json, char *key) {
-    for (json_pair_list_node_t *current = json; current; current = current -> next) {
-        if (!strcmp(current -> pair -> key, key)) {
-            return current -> pair -> value;
+json_value_t* json_get_value(json_object_t *json, char *key) {
+    for (json_pair_t *current = json -> pair_list_head; current; current = current -> next) {
+        if (!strcmp(current -> key, key)) {
+            return current -> value;
         }
     }
     return NULL;
 }
 
 /* Frees Json Array memory */
-void json_free_array(json_value_list_node_t *array) {
-    for (json_value_list_node_t *current = array; current;) {
+void json_free_array(json_array_t *json_array) {
+    for (json_value_t *current = json_array -> value_list_head; current;) {
+        switch (current -> type) {
+            case JSTRING:
+                free(current -> data);
+                break;
+            case JNUMBER:
+                free(current -> data);
+                break;
+            case JOBJECT:
+                json_free_object(current -> data);
+                break;
+            case JARRAY:
+                json_free_array(current -> data);
+                break;
+            default: /* Other types don't need to be freed */
+                break;
+        }
+        json_value_t *temp = current;
+        current = current -> next;
+        free(temp);
+    }
+    free(json_array);
+}
+
+/* Frees Json Object memory */
+void json_free_object(json_object_t *json_object) {
+    for (json_pair_t *current = json_object -> pair_list_head; current;) {
+        free(current -> key);
         switch (current -> value -> type) {
             case JSTRING:
+                free(current -> value -> data);
+                break;
+            case JNUMBER:
                 free(current -> value -> data);
                 break;
             case JOBJECT:
@@ -150,36 +178,9 @@ void json_free_array(json_value_list_node_t *array) {
                 break;
         }
         free(current -> value);
-        json_value_list_node_t *temp = current;
+        json_pair_t *temp = current;
         current = current -> next;
         free(temp);
     }
-}
-
-/* Frees Json Object memory */
-void json_free_object(json_pair_list_node_t *json) {
-    for (json_pair_list_node_t *current = json; current;) {
-        free(current -> pair -> key);
-        switch (current -> pair -> value -> type) {
-            case JSTRING:
-                free(current -> pair -> value -> data);
-                break;
-            case JNUMBER:
-                free(current -> pair -> value -> data);
-                break;
-            case JOBJECT:
-                json_free_object(current -> pair -> value -> data);
-                break;
-            case JARRAY:
-                json_free_array(current -> pair -> value -> data);
-                break;
-            default: /* Other types don't need to be freed */
-                break;
-        }
-        free(current -> pair -> value);
-        free(current -> pair);
-        json_pair_list_node_t *temp = current;
-        current = current -> next;
-        free(temp);
-    }
+    free(json_object);
 }
