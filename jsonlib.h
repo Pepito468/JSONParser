@@ -52,14 +52,17 @@ json_value_t* json_create_value(json_value_type_t type, void *data);
 void json_concatenate_pairs(json_pair_t *list, json_pair_t *pair);
 void json_concatenate_values(json_value_t *list, json_value_t *value);
 
+/* Returns the value from the Json Object that is associated with the given key. Returns NULL if it finds nothing */
+json_value_t* json_get_value_from_object(json_object_t *json_object, char *key);
+
+/* Returns the value from the Json Object that is at the given position (starts at 0). Returns NULL if there is no item */
+json_value_t* json_get_value_from_array(json_array_t *json_array, unsigned int position);
+
 /* Prints the given Json Object */
 void json_object_print(json_object_t *json);
 
 /* Prints the given Json Array */
 void json_array_print(json_array_t *array);
-
-/* Returns the value from the Json that is associated with the given key. Returns NULL if it finds nothing */
-json_value_t* json_get_value(json_object_t *json, char *key);
 
 /* Frees Json Object memory */
 void json_free_object(json_object_t *json_object);

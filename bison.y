@@ -165,8 +165,8 @@ value:
 
 void yyerror(const char *msg)
 {
+    /* If the json is badly formatted, memory is leaked */
     fprintf(stderr, "JSON is malformed (line %d):\n%s\n", yylineno - 1, msg);
-    json_free_object(main_json); /* This does probably nothing */
     exit(1);
 }
 

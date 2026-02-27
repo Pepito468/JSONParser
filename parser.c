@@ -16,26 +16,34 @@ int main(int argc, char **argv) {
 
     printf("\n");
     printf("\n");
-    json_value_t *mail = json_get_value(json, "email");
+    json_value_t *mail = json_get_value_from_object(json, "email");
     if (mail)
         printf("MAIL: %s\n", (char*) mail -> data);
 
-    json_value_t *id = json_get_value(json, "id");
+    json_value_t *id = json_get_value_from_object(json, "id");
     if (id)
-        printf("ID: %f\n", *(double*)json_get_value(json, "id") -> data);
+        printf("ID: %f\n", *(double*)json_get_value_from_object(json, "id") -> data);
 
-    json_value_t *profile = json_get_value(json, "profile");
+    json_value_t *profile = json_get_value_from_object(json, "profile");
     if (profile) {
-        json_value_t *age = json_get_value(profile -> data, "age");
+        json_value_t *age = json_get_value_from_object(profile -> data, "age");
         if (age)
             printf("PROFILE -> AGE: %f\n", *(double*) age -> data);
     }
 
-    if (json_get_value(json, argv[2]))
+    json_value_t *roles = json_get_value_from_object(json, "roles");
+    if (roles) {
+        if (roles -> type == JARRAY) {
+            json_value_t *second = json_get_value_from_array(roles -> data, 1);
+            printf("Second role: %s\n", (char*) second -> data);
+        }
+    }
+
+    if (json_get_value_from_object(json, argv[2]))
         printf("Has a \"%s\" key!\n", argv[2]);
     else
         printf("Does not have a \"%s\" key!\n", argv[2]);
-
+    
     json_free_object(json);
 
     return 0;

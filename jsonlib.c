@@ -8,8 +8,6 @@
 #include "jsonlib.h"
 #include "bison.tab.h"
 
-#define PADDING "    "
-
 json_object_t* json_parse(FILE *file) {
     return flexbison(file);
 }
@@ -42,7 +40,6 @@ json_pair_t* json_create_pair(char *key, json_value_t *value) {
     return new_pair;
 }
 
-
 json_value_t* json_create_value(json_value_type_t type, void *data) {
 
     json_value_t *new_value = malloc(sizeof(json_value_t));
@@ -50,6 +47,26 @@ json_value_t* json_create_value(json_value_type_t type, void *data) {
     new_value -> data = data;
     new_value -> next = NULL;
     return new_value;
+}
+
+json_value_t* json_get_value_from_object(json_object_t *json_object, char *key) {
+    for (json_pair_t *current = json_object -> pair_list_head; current; current = current -> next) {
+        if (!strcmp(current -> key, key)) {
+            return current -> value;
+        }
+    }
+    return NULL;
+}
+
+/* Returns the value from the Json Object that is at the given position. Returns NULL if the is no item */
+json_value_t* json_get_value_from_array(json_array_t *json_array, unsigned int position) {
+    unsigned int current_position = 0;
+    for (json_value_t *current = json_array -> value_list_head; current; current = current -> next) {
+        if (current_position == position)
+            return current;
+        current_position++;
+    }
+    return NULL;
 }
 
 void json_object_print(json_object_t *json) {
@@ -120,15 +137,6 @@ void json_array_print(json_array_t *array) {
             printf(", ");
     }
     printf("]");
-}
-
-json_value_t* json_get_value(json_object_t *json, char *key) {
-    for (json_pair_t *current = json -> pair_list_head; current; current = current -> next) {
-        if (!strcmp(current -> key, key)) {
-            return current -> value;
-        }
-    }
-    return NULL;
 }
 
 /* Frees Json Array memory */
