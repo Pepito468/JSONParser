@@ -11,6 +11,11 @@ int main(int argc, char **argv) {
         return 1;
 
     json_object_t *json = json_parse(p);
+    if (!json) {
+        fclose(p);
+        printf("Json is NULL\n");
+        return 1;
+    }
     fclose(p);
     json_object_print(json);
 

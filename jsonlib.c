@@ -8,18 +8,47 @@
 #include "jsonlib.h"
 #include "bison.tab.h"
 
+/* List holding temp data during json allocation */
+json_temp_data_t *temp_data_head = NULL;
+
+void* json_malloc(size_t size) {
+    void *new = malloc(size);
+
+    /* Allocate holder to keep reference to the data */
+    json_temp_data_t *holder = malloc(sizeof(json_temp_data_t));
+    if (!new || !holder)
+        yyerror("Memory allocation error\n");
+    holder -> data = new;
+    holder -> next = temp_data_head;
+    temp_data_head = holder;
+
+    return new;
+}
+
+void json_free_temp(bool error) {
+    while (temp_data_head) {
+        if (error)
+            free(temp_data_head -> data);
+
+        json_temp_data_t *temp = temp_data_head;
+        temp_data_head = temp_data_head -> next;
+        free(temp);
+    }
+    temp_data_head = NULL;
+}
+
 json_object_t* json_parse(FILE *file) {
     return flexbison(file);
 }
 
 json_object_t* json_create_object() {
-    json_object_t *new_object = malloc(sizeof(json_object_t));
+    json_object_t *new_object = json_malloc(sizeof(json_object_t));
     new_object -> pair_list_head = NULL;
     return new_object;
 }
 
 json_array_t* json_create_array() {
-    json_array_t *new_array = malloc(sizeof(json_array_t));
+    json_array_t *new_array = json_malloc(sizeof(json_array_t));
     new_array -> value_list_head = NULL;
     return new_array;
 }
@@ -33,7 +62,7 @@ void json_concatenate_values(json_value_t *list, json_value_t *value) {
 }
 
 json_pair_t* json_create_pair(char *key, json_value_t *value) {
-    json_pair_t *new_pair = malloc(sizeof(json_pair_t));
+    json_pair_t *new_pair = json_malloc(sizeof(json_pair_t));
     new_pair -> key = key;
     new_pair -> value = value;
     new_pair -> next = NULL;
@@ -42,7 +71,7 @@ json_pair_t* json_create_pair(char *key, json_value_t *value) {
 
 json_value_t* json_create_value(json_value_type_t type, void *data) {
 
-    json_value_t *new_value = malloc(sizeof(json_value_t));
+    json_value_t *new_value = json_malloc(sizeof(json_value_t));
     new_value -> type = type;
     new_value -> data = data;
     new_value -> next = NULL;

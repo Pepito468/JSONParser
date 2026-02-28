@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include "jsonlib.h"
 
-json_object_t *main_json = NULL;
+json_object_t *main_json;
 
 #define YYMAXDEPTH 1000000
 extern int yylex_destroy(void);
@@ -165,9 +165,7 @@ value:
 
 void yyerror(const char *msg)
 {
-    /* If the json is badly formatted, memory is leaked */
     fprintf(stderr, "JSON is malformed (line %d):\n%s\n", yylineno - 1, msg);
-    exit(1);
 }
 
 
@@ -175,8 +173,12 @@ json_object_t* flexbison(FILE *bison_input) {
 
     yyin = bison_input;
 
+    main_json = NULL;
+
     /* Parse input file */
-    yyparse();
+    bool error = yyparse();
+
+    json_free_temp(error);
 
     yylex_destroy();
 

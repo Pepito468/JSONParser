@@ -42,6 +42,11 @@ typedef struct json_array {
     json_value_t *value_list_head;
 } json_array_t;
 
+/* Struct to temporary keep track of data during json memory allocation */
+typedef struct json_temp_data {
+    void *data;
+    struct json_temp_data *next;
+} json_temp_data_t;
 
 json_object_t* json_create_object();
 json_array_t* json_create_array();
@@ -67,7 +72,13 @@ void json_array_print(json_array_t *array);
 /* Frees Json Object memory */
 void json_free_object(json_object_t *json_object);
 
-/* Parses the given file and returns a Json Object */
+/* Parses the given file and returns a Json Object. If the json is malformed, NULL is returned */
 json_object_t* json_parse(FILE *file);
+
+/* Memory allocation helper for json data */
+void* json_malloc(size_t size);
+
+/* Frees the temp_data list, if error is true, the data will also be deleted */
+void json_free_temp(bool error);
 
 #endif
